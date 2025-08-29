@@ -62,65 +62,66 @@ type NewPayload = {
 // ds: parent โดย seq
 const DS_PARENT_SEQ_RANGE = { start: 17, end: 32 };
 // geo: parent โดย seq (เอาถึงแค่ 71 ตามที่บอก)
-const GEO_PARENT_SEQ_RANGE = { start: 52, end: 71 };
+const GEO_PARENT_SEQ_RANGE = { start: 53, end: 72 };
 
-/* ---------- CONFIG: Mapping แบบ Array (แก้ง่าย/CRUD สบาย) ----------
-   ทั้งสองฝั่ง "ใช้ seq" เหมือนกัน:
-   - DS: key = parentSeq  -> modemSeqs[]
-   - GEO: key = parentSeq -> modemSeqs[]
--------------------------------------------------- */
-type DsLink = { parentSeq: number; modemSeqs: number[] };
-type GeoLink = { parentSeq: number; modemSeqs: number[] };
+/* ---------- CONFIG: Mapping แบบ Array เดียว (ds + geo) ---------- */
+type Link = { source: Source; parentSeq: number; modemSeqs: number[] };
 
-// ค่า default เดิมของคุณ:
-// ds parent seq 17..32 -> modem seq 1..16
-const DS_LINKS: DsLink[] = [
-  { parentSeq: 17, modemSeqs: [1] },
-  { parentSeq: 18, modemSeqs: [2] },
-  { parentSeq: 19, modemSeqs: [3] },
-  { parentSeq: 20, modemSeqs: [4] },
-  { parentSeq: 21, modemSeqs: [5] },
-  { parentSeq: 22, modemSeqs: [6] },
-  { parentSeq: 23, modemSeqs: [7] },
-  { parentSeq: 24, modemSeqs: [8] },
-  { parentSeq: 25, modemSeqs: [9] },
-  { parentSeq: 26, modemSeqs: [10] },
-  { parentSeq: 27, modemSeqs: [11] },
-  { parentSeq: 28, modemSeqs: [12] },
-  { parentSeq: 29, modemSeqs: [13] },
-  { parentSeq: 30, modemSeqs: [14] },
-  { parentSeq: 31, modemSeqs: [15] },
-  { parentSeq: 32, modemSeqs: [16] },
-  // อนาคตเพิ่มหลายตัวก็ได้ เช่น { parentSeq: 20, modemSeqs: [4,5] }
+const LINKS: Link[] = [
+  // ds: parent seq 17..32 -> modem seq 1..16
+  { source: "ds", parentSeq: 17, modemSeqs: [1] },
+  { source: "ds", parentSeq: 18, modemSeqs: [2] },
+  { source: "ds", parentSeq: 19, modemSeqs: [3] },
+  { source: "ds", parentSeq: 20, modemSeqs: [4] },
+  { source: "ds", parentSeq: 21, modemSeqs: [5] },
+  { source: "ds", parentSeq: 22, modemSeqs: [6] },
+  { source: "ds", parentSeq: 23, modemSeqs: [7] },
+  { source: "ds", parentSeq: 24, modemSeqs: [8] },
+  { source: "ds", parentSeq: 25, modemSeqs: [9] },
+  { source: "ds", parentSeq: 26, modemSeqs: [10] },
+  { source: "ds", parentSeq: 27, modemSeqs: [11] },
+  { source: "ds", parentSeq: 28, modemSeqs: [12] },
+  { source: "ds", parentSeq: 29, modemSeqs: [13] },
+  { source: "ds", parentSeq: 30, modemSeqs: [14] },
+  { source: "ds", parentSeq: 31, modemSeqs: [15] },
+  { source: "ds", parentSeq: 32, modemSeqs: [16] },
+
+  // geo: parent seq 52..71 -> modem seq 33..52
+  // (ตัวอย่างที่คุณต้องการ: geo Device 20 (seq=52) คู่กับ geo Device 1 (seq=33))
+  { source: "geo", parentSeq: 53, modemSeqs: [33] },
+  { source: "geo", parentSeq: 54, modemSeqs: [34] },
+  { source: "geo", parentSeq: 55, modemSeqs: [35] },
+  { source: "geo", parentSeq: 56, modemSeqs: [36] },
+  { source: "geo", parentSeq: 57, modemSeqs: [37] },
+  { source: "geo", parentSeq: 58, modemSeqs: [38] },
+  { source: "geo", parentSeq: 59, modemSeqs: [39] },
+  { source: "geo", parentSeq: 60, modemSeqs: [40] },
+  { source: "geo", parentSeq: 61, modemSeqs: [41] },
+  { source: "geo", parentSeq: 62, modemSeqs: [42] },
+  { source: "geo", parentSeq: 63, modemSeqs: [43] },
+  { source: "geo", parentSeq: 64, modemSeqs: [44] },
+  { source: "geo", parentSeq: 65, modemSeqs: [45] },
+  { source: "geo", parentSeq: 66, modemSeqs: [46] },
+  { source: "geo", parentSeq: 67, modemSeqs: [47] },
+  { source: "geo", parentSeq: 68, modemSeqs: [48] },
+  { source: "geo", parentSeq: 69, modemSeqs: [49] },
+  { source: "geo", parentSeq: 70, modemSeqs: [50] },
+  { source: "geo", parentSeq: 71, modemSeqs: [51] },
+  { source: "geo", parentSeq: 72, modemSeqs: [52] },
+  // จะเพิ่มหลาย modem ก็ทำได้ เช่น { source:"geo", parentSeq: 60, modemSeqs:[41,42] }
 ];
 
-// ต้องการให้ "geo Device 20 จับคู่กับ geo Device 1" (ตามตัวอย่างจริงที่ seq=52→33)
-// และไล่ต่อกัน: 21→2, 22→3, ..., 39→20
-// ในเชิง seq คือ parent 52..71 -> modem 33..50
-const GEO_LINKS: GeoLink[] = [
-  { parentSeq: 52, modemSeqs: [33] },
-  { parentSeq: 53, modemSeqs: [34] },
-  { parentSeq: 54, modemSeqs: [35] },
-  { parentSeq: 55, modemSeqs: [36] },
-  { parentSeq: 56, modemSeqs: [37] },
-  { parentSeq: 57, modemSeqs: [38] },
-  { parentSeq: 58, modemSeqs: [39] },
-  { parentSeq: 59, modemSeqs: [40] },
-  { parentSeq: 60, modemSeqs: [41] },
-  { parentSeq: 61, modemSeqs: [42] },
-  { parentSeq: 62, modemSeqs: [43] },
-  { parentSeq: 63, modemSeqs: [44] },
-  { parentSeq: 64, modemSeqs: [45] },
-  { parentSeq: 65, modemSeqs: [46] },
-  { parentSeq: 66, modemSeqs: [47] },
-  { parentSeq: 67, modemSeqs: [48] },
-  { parentSeq: 68, modemSeqs: [49] },
-  { parentSeq: 69, modemSeqs: [50] },
-  { parentSeq: 70, modemSeqs: [51] }, // ถ้าคุณอยากตัด 72 ออก mapping นี้ก็โอเค (ไม่แตะ 72)
-  { parentSeq: 71, modemSeqs: [52] },
-  // ถ้าอนาคตจะใช้ 72 ด้วย (id 40) ที่มี seq=72 -> modemSeqs น่าจะเป็น [51]
-  // { parentSeq: 72, modemSeqs: [51] },
-];
+/* ---------- Index: Array → Map<source, Map<parentSeq, modemSeqs[]>> ---------- */
+function buildLinkIndex(links: Link[]): Map<Source, Map<number, number[]>> {
+  const idx = new Map<Source, Map<number, number[]>>();
+  idx.set("ds", new Map());
+  idx.set("geo", new Map());
+  for (const { source, parentSeq, modemSeqs } of links) {
+    const inner = idx.get(source)!;
+    inner.set(parentSeq, modemSeqs);
+  }
+  return idx;
+}
 
 /* ---------- Helpers ---------- */
 const ts = (s?: string) => (s ? Date.parse(s) || 0 : 0);
@@ -137,56 +138,42 @@ function dedupeWithinSource(devs: UpDevice[]): UpDevice[] {
       prev.value !== 0 && d.value === 0
         ? d
         : d.value !== 0 && prev.value === 0
-        ? prev
-        : ts(d.last_online) > ts(prev.last_online)
-        ? d
-        : prev;
+          ? prev
+          : ts(d.last_online) > ts(prev.last_online)
+            ? d
+            : prev;
     byId.set(d.id, pick);
   }
   return [...byId.values()];
 }
 
 // แปลง array → index (Map) เพื่อ lookup เร็ว
-function buildDsIndex(links: DsLink[]): Map<number, number[]> {
-  const m = new Map<number, number[]>();
-  for (const { parentSeq, modemSeqs } of links) m.set(parentSeq, modemSeqs);
-  return m;
-}
-function buildGeoIndex(links: GeoLink[]): Map<number, number[]> {
-  const m = new Map<number, number[]>();
-  for (const { parentSeq, modemSeqs } of links) m.set(parentSeq, modemSeqs);
-  return m;
-}
+// function buildDsIndex(links: DsLink[]): Map<number, number[]> {
+//   const m = new Map<number, number[]>();
+//   for (const { parentSeq, modemSeqs } of links) m.set(parentSeq, modemSeqs);
+//   return m;
+// }
+// function buildGeoIndex(links: GeoLink[]): Map<number, number[]> {
+//   const m = new Map<number, number[]>();
+//   for (const { parentSeq, modemSeqs } of links) m.set(parentSeq, modemSeqs);
+//   return m;
+// }
 
-/** สร้าง modem จาก mapping แบบ seq ทั้งสองฝั่ง */
+/* ---------- ใช้ index เดียว lookup ได้ทั้ง ds/geo (จับคู่ด้วย seq เหมือนกัน) ---------- */
 function buildModemsFromSeqMaps(
   parent: UpDevice,
-  dsSeqMap: Map<number, UpDevice>, // lookup ds ด้วย seq
-  geoSeqMap: Map<number, UpDevice>, // lookup geo ด้วย seq
-  dsIdx: Map<number, number[]>, // index ของ DS_LINKS
-  geoIdx: Map<number, number[]> // index ของ GEO_LINKS
+  dsSeqMap: Map<number, UpDevice>,   // lookup ds ด้วย seq
+  geoSeqMap: Map<number, UpDevice>,  // lookup geo ด้วย seq
+  linkIdx: Map<Source, Map<number, number[]>>,
 ): ModemItem[] {
-  if (parent.source === "ds") {
-    const targetSeqs = dsIdx.get(parent.seq) ?? [];
-    const items = targetSeqs
-      .map((s) => dsSeqMap.get(s))
-      .filter(Boolean) as UpDevice[];
-    return items.map((m) => ({
-      source: (m.source ?? "ds") as Source,
-      id: m.id,
-      key: m.key,
-      value: m.value,
-      last_online: m.last_online,
-      seq: m.seq,
-    }));
-  }
-  // geo
-  const targetSeqs = geoIdx.get(parent.seq) ?? [];
-  const items = targetSeqs
-    .map((s) => geoSeqMap.get(s))
-    .filter(Boolean) as UpDevice[];
-  return items.map((m) => ({
-    source: (m.source ?? "geo") as Source,
+  const src = (parent.source ?? "ds") as Source;
+  const inner = linkIdx.get(src) ?? new Map<number, number[]>();
+  const targetSeqs = inner.get(parent.seq) ?? [];
+  const map = src === "geo" ? geoSeqMap : dsSeqMap;
+
+  const items = targetSeqs.map(s => map.get(s)).filter(Boolean) as UpDevice[];
+  return items.map(m => ({
+    source: (m.source ?? src) as Source,
     id: m.id,
     key: m.key,
     value: m.value,
@@ -197,67 +184,41 @@ function buildModemsFromSeqMaps(
 
 /* ---------- Transform ---------- */
 function transform(op: OldPayload): NewPayload {
-  // 1) แยก/ dedupe
-  const dsUnique = dedupeWithinSource(
-    op.devices.filter((d) => d.source === "ds")
-  );
-  const geoUnique = dedupeWithinSource(
-    op.devices.filter((d) => d.source === "geo")
-  );
+  const dsUnique = dedupeWithinSource(op.devices.filter(d => d.source === "ds"));
+  const geoUnique = dedupeWithinSource(op.devices.filter(d => d.source === "geo"));
 
-  // 2) ทำ map lookup ด้วย seq
-  const dsSeqMap = new Map(dsUnique.map((d) => [d.seq, d]));
-  const geoSeqMap = new Map(geoUnique.map((d) => [d.seq, d]));
+  const dsSeqMap = new Map(dsUnique.map(d => [d.seq, d]));
+  const geoSeqMap = new Map(geoUnique.map(d => [d.seq, d]));
 
-  // 3) สร้าง index mapping จาก array
-  const dsIdx = buildDsIndex(DS_LINKS);
-  const geoIdx = buildGeoIndex(GEO_LINKS);
+  // ✅ สร้าง index เดียวจาก LINKS
+  const linkIdx = buildLinkIndex(LINKS);
 
-  // 4) เลือก parent ตามช่วง seq
   const dsParents = dsUnique
-    .filter(
-      (d) =>
-        d.seq >= DS_PARENT_SEQ_RANGE.start && d.seq <= DS_PARENT_SEQ_RANGE.end
-    )
-    .sort((a, b) => a.seq - b.seq); // แก้บั๊กเดิม a.seq - a.seq
-
+    .filter(d => d.seq >= DS_PARENT_SEQ_RANGE.start && d.seq <= DS_PARENT_SEQ_RANGE.end)
+    .sort((a, b) => a.seq - b.seq);
   const geoParents = geoUnique
-    .filter(
-      (d) =>
-        d.seq >= GEO_PARENT_SEQ_RANGE.start && d.seq <= GEO_PARENT_SEQ_RANGE.end
-    )
+    .filter(d => d.seq >= GEO_PARENT_SEQ_RANGE.start && d.seq <= GEO_PARENT_SEQ_RANGE.end)
     .sort((a, b) => a.seq - b.seq);
 
-  // 5) ประกอบผลลัพธ์ + เติม modem (seq-based) + id_out=id
-  const dsOut: DeviceOut[] = dsParents.map((p) => ({
+  const dsOut: DeviceOut[] = dsParents.map(p => ({
     source: (p.source ?? "ds") as Source,
-    id: p.id,
-    key: p.key,
-    value: p.value,
-    last_online: p.last_online,
-    seq: p.seq,
-    modem: buildModemsFromSeqMaps(p, dsSeqMap, geoSeqMap, dsIdx, geoIdx),
+    id: p.id, key: p.key, value: p.value, last_online: p.last_online, seq: p.seq,
+    modem: buildModemsFromSeqMaps(p, dsSeqMap, geoSeqMap, linkIdx),
     id_out: p.id,
   }));
 
-  const geoOut: DeviceOut[] = geoParents.map((p) => ({
+  const geoOut: DeviceOut[] = geoParents.map(p => ({
     source: (p.source ?? "geo") as Source,
-    id: p.id,
-    key: p.key,
-    value: p.value,
-    last_online: p.last_online,
-    seq: p.seq,
-    modem: buildModemsFromSeqMaps(p, dsSeqMap, geoSeqMap, dsIdx, geoIdx),
+    id: p.id, key: p.key, value: p.value, last_online: p.last_online, seq: p.seq,
+    modem: buildModemsFromSeqMaps(p, dsSeqMap, geoSeqMap, linkIdx),
     id_out: p.id,
   }));
 
   const devices = [...dsOut, ...geoOut];
 
-  // 6) นับสรุปจาก id_out
   const online_ids: number[] = [];
   const offline_ids: number[] = [];
-  for (const dv of devices)
-    (dv.value === 0 ? online_ids : offline_ids).push(dv.id_out!);
+  for (const dv of devices) (dv.value === 0 ? online_ids : offline_ids).push(dv.id_out!);
 
   return {
     mode: op.mode,
@@ -268,10 +229,10 @@ function transform(op: OldPayload): NewPayload {
     devices,
     count_online: online_ids.length,
     count_offline: offline_ids.length,
-    online_ids,
-    offline_ids,
+    online_ids, offline_ids,
   };
 }
+
 
 /* ---------- Handler ---------- */
 export async function GET() {
